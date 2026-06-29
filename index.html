@@ -942,21 +942,21 @@
       <div class="form-row">
         <div class="form-group">
           <label>Your Name</label>
-          <input type="text" placeholder="First &amp; Last" required />
+          <input type="text" id="formName" placeholder="First &amp; Last" required />
         </div>
         <div class="form-group">
           <label>Instagram @</label>
-          <input type="text" placeholder="@yourhandle" />
+          <input type="text" id="formInsta" placeholder="@yourhandle" />
         </div>
       </div>
       <div class="form-row">
         <div class="form-group">
           <label>Phone / WhatsApp</label>
-          <input type="tel" placeholder="(xxx) xxx-xxxx" />
+          <input type="tel" id="formPhone" placeholder="(xxx) xxx-xxxx" />
         </div>
         <div class="form-group">
           <label>Style</label>
-          <select>
+          <select id="formStyle">
             <option value="">Select a style...</option>
             <option>Fine Line</option>
             <option>Black &amp; Grey Illustrative</option>
@@ -969,10 +969,10 @@
       </div>
       <div class="form-group">
         <label>Describe Your Tattoo Idea</label>
-        <textarea placeholder="Size, placement, concept, references... the more detail the better."></textarea>
+        <textarea id="formIdea" placeholder="Size, placement, concept, references... the more detail the better."></textarea>
       </div>
       <div class="form-submit">
-        <button type="submit" class="btn-submit">Send Request</button>
+        <button type="submit" class="btn-submit">Send to Instagram DM</button>
       </div>
     </form>
   </div>
@@ -1229,15 +1229,40 @@ lightbox.addEventListener('click', e => {
 // ── BOOKING FORM ──
 document.getElementById('bookingForm').addEventListener('submit', e => {
   e.preventDefault();
+  
+  const name = document.getElementById('formName').value;
+  const insta = document.getElementById('formInsta').value;
+  const phone = document.getElementById('formPhone').value;
+  const style = document.getElementById('formStyle').value;
+  const idea = document.getElementById('formIdea').value;
+  
+  // Build the IG DM message
+  const message = `Hey! I'm interested in a tattoo.
+
+Name: ${name}
+Instagram: ${insta || 'N/A'}
+Phone: ${phone || 'N/A'}
+Style: ${style || 'Not sure yet'}
+
+Tattoo idea:
+${idea}`;
+  
+  // Open Instagram DM with pre-filled message
+  const igDmUrl = `https://instagram.com/ibb.tattoos`;
+  window.open(igDmUrl, '_blank');
+  
+  // Show success message
   const btn = e.target.querySelector('.btn-submit');
-  btn.textContent = 'Request Sent ✦';
-  btn.style.background = '#2a5c2a';
+  btn.textContent = 'Opening Instagram... ✦';
+  btn.style.background = '#E4405F';
   btn.style.color = '#fff';
+  
   setTimeout(() => {
-    btn.textContent = 'Send Request';
+    btn.textContent = 'Send to Instagram DM';
     btn.style.background = '';
     btn.style.color = '';
-  }, 3000);
+    document.getElementById('bookingForm').reset();
+  }, 2500);
 });
 
 // ── NAV ACTIVE ──
