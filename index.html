@@ -1,0 +1,1252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>INKEDBYBYRON — Tattoo Artist</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --black:    #080808;
+      --ink:      #0d0d0f;
+      --charcoal: #161618;
+      --smoke:    #2a2a2e;
+      --ash:      #5a5a62;
+      --silver:   #a8a8b8;
+      --white:    #f0f0f5;
+      --gold:     #c9a84c;
+      --gold-dim: #7a6228;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--black);
+      color: var(--white);
+      font-family: 'Cormorant Garamond', serif;
+      overflow-x: hidden;
+      cursor: none;
+    }
+
+    /* ── CUSTOM CURSOR ── */
+    .cursor {
+      position: fixed;
+      width: 12px; height: 12px;
+      background: var(--gold);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 9999;
+      transform: translate(-50%, -50%);
+      transition: transform 0.1s, width 0.2s, height 0.2s, background 0.2s;
+      mix-blend-mode: difference;
+    }
+    .cursor-ring {
+      position: fixed;
+      width: 40px; height: 40px;
+      border: 1px solid rgba(201,168,76,0.5);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 9998;
+      transform: translate(-50%, -50%);
+      transition: left 0.12s ease-out, top 0.12s ease-out, width 0.2s, height 0.2s;
+    }
+
+    /* ── INK CANVAS ── */
+    #inkCanvas {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      opacity: 0.55;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.4rem 4rem;
+      background: linear-gradient(to bottom, rgba(8,8,8,0.95), transparent);
+    }
+
+    .nav-logo {
+      font-family: 'Cinzel Decorative', serif;
+      font-size: 1.1rem;
+      font-weight: 900;
+      letter-spacing: 0.15em;
+      color: var(--gold);
+      text-decoration: none;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 2.5rem;
+      list-style: none;
+    }
+
+    .nav-links a {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.68rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--silver);
+      text-decoration: none;
+      transition: color 0.3s;
+      position: relative;
+    }
+    .nav-links a::after {
+      content: '';
+      position: absolute;
+      bottom: -4px; left: 0;
+      width: 0; height: 1px;
+      background: var(--gold);
+      transition: width 0.3s;
+    }
+    .nav-links a:hover { color: var(--white); }
+    .nav-links a:hover::after { width: 100%; }
+
+    /* ── HERO ── */
+    #hero {
+      position: relative;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      z-index: 1;
+      overflow: hidden;
+    }
+
+    .hero-eyebrow {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.35em;
+      color: var(--gold);
+      text-transform: uppercase;
+      margin-bottom: 1.5rem;
+      opacity: 0;
+      animation: fadeUp 1s 0.3s forwards;
+    }
+
+    .hero-title {
+      font-family: 'Cinzel Decorative', serif;
+      font-size: clamp(3.5rem, 10vw, 9rem);
+      font-weight: 900;
+      line-height: 0.9;
+      letter-spacing: -0.02em;
+      color: var(--white);
+      opacity: 0;
+      animation: fadeUp 1s 0.6s forwards;
+    }
+
+    .hero-title span {
+      display: block;
+      color: var(--gold);
+      font-size: 0.38em;
+      letter-spacing: 0.45em;
+      font-weight: 400;
+      margin-top: 0.8rem;
+    }
+
+    .hero-sub {
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: clamp(1rem, 2vw, 1.3rem);
+      color: var(--silver);
+      margin-top: 2rem;
+      letter-spacing: 0.04em;
+      opacity: 0;
+      animation: fadeUp 1s 0.9s forwards;
+    }
+
+    .hero-cta {
+      margin-top: 3rem;
+      opacity: 0;
+      animation: fadeUp 1s 1.2s forwards;
+    }
+
+    .btn-primary {
+      display: inline-block;
+      padding: 1rem 3rem;
+      border: 1px solid var(--gold);
+      color: var(--gold);
+      font-family: 'Space Mono', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      text-decoration: none;
+      transition: background 0.3s, color 0.3s;
+      position: relative;
+      overflow: hidden;
+    }
+    .btn-primary::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--gold);
+      transform: translateX(-100%);
+      transition: transform 0.3s;
+      z-index: -1;
+    }
+    .btn-primary:hover { color: var(--black); }
+    .btn-primary:hover::before { transform: translateX(0); }
+
+    .scroll-hint {
+      position: absolute;
+      bottom: 2.5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+      opacity: 0;
+      animation: fadeUp 1s 1.8s forwards;
+    }
+    .scroll-hint span {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.55rem;
+      letter-spacing: 0.25em;
+      color: var(--ash);
+      text-transform: uppercase;
+    }
+    .scroll-line {
+      width: 1px;
+      height: 50px;
+      background: linear-gradient(to bottom, var(--gold), transparent);
+      animation: scrollPulse 2s ease-in-out infinite;
+    }
+
+    /* ── SECTION BASE ── */
+    section {
+      position: relative;
+      z-index: 1;
+      padding: 8rem 4rem;
+    }
+
+    .section-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.6rem;
+      letter-spacing: 0.35em;
+      color: var(--gold);
+      text-transform: uppercase;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .section-label::before {
+      content: '';
+      width: 2rem;
+      height: 1px;
+      background: var(--gold);
+    }
+
+    .section-title {
+      font-family: 'Cinzel Decorative', serif;
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      font-weight: 700;
+      line-height: 1.05;
+      margin-bottom: 1.5rem;
+    }
+
+    /* ── ABOUT ── */
+    #about {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6rem;
+      align-items: center;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .about-text p {
+      font-size: 1.2rem;
+      line-height: 1.85;
+      color: var(--silver);
+      margin-bottom: 1.5rem;
+      font-style: italic;
+    }
+    .about-text p strong {
+      color: var(--white);
+      font-style: normal;
+    }
+
+    .about-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      margin-top: 3rem;
+    }
+
+    .stat {
+      border-left: 1px solid var(--gold-dim);
+      padding-left: 1.2rem;
+    }
+    .stat-num {
+      font-family: 'Cinzel Decorative', serif;
+      font-size: 2.2rem;
+      color: var(--gold);
+      line-height: 1;
+    }
+    .stat-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.6rem;
+      letter-spacing: 0.2em;
+      color: var(--ash);
+      text-transform: uppercase;
+      margin-top: 0.3rem;
+    }
+
+    .about-visual {
+      position: relative;
+    }
+    .about-img-frame {
+      position: relative;
+      aspect-ratio: 3/4;
+      overflow: hidden;
+    }
+    .about-img-frame img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      filter: grayscale(20%) contrast(1.05);
+      transition: transform 0.6s;
+    }
+    .about-img-frame:hover img { transform: scale(1.04); }
+    .about-img-frame::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgba(8,8,8,0.6), transparent 50%);
+      z-index: 1;
+    }
+    .about-img-frame::after {
+      content: '';
+      position: absolute;
+      top: -12px; right: -12px;
+      bottom: 12px; left: 12px;
+      border: 1px solid var(--gold-dim);
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    /* ── PORTFOLIO ── */
+    #portfolio {
+      background: var(--ink);
+      max-width: 100%;
+      padding: 8rem 4rem;
+    }
+
+    .portfolio-header {
+      max-width: 1200px;
+      margin: 0 auto 4rem;
+    }
+
+    .gallery-filter {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-top: 2rem;
+    }
+
+    .filter-btn {
+      padding: 0.5rem 1.5rem;
+      border: 1px solid var(--smoke);
+      background: transparent;
+      color: var(--ash);
+      font-family: 'Space Mono', monospace;
+      font-size: 0.6rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      cursor: none;
+      transition: all 0.3s;
+    }
+    .filter-btn.active, .filter-btn:hover {
+      border-color: var(--gold);
+      color: var(--gold);
+      background: rgba(201,168,76,0.05);
+    }
+
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 1.5rem;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .gallery-item {
+      position: relative;
+      overflow: hidden;
+      aspect-ratio: 4/5;
+      cursor: none;
+    }
+
+    .gallery-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      filter: grayscale(15%) contrast(1.08);
+    }
+
+    .gallery-item:hover img { transform: scale(1.07); }
+
+    .gallery-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgba(8,8,8,0.9) 0%, transparent 50%);
+      opacity: 0;
+      transition: opacity 0.4s;
+      display: flex;
+      align-items: flex-end;
+      padding: 1.5rem;
+    }
+
+    .gallery-item:hover .gallery-overlay { opacity: 1; }
+
+    .gallery-tag {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.58rem;
+      letter-spacing: 0.2em;
+      color: var(--gold);
+      text-transform: uppercase;
+    }
+
+    /* ── LIGHTBOX ── */
+    .lightbox {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.95);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+    .lightbox.open { display: flex; }
+    .lightbox img {
+      max-height: 90vh;
+      max-width: 90vw;
+      object-fit: contain;
+      border: 1px solid var(--gold-dim);
+    }
+    .lightbox-close {
+      position: absolute;
+      top: 2rem; right: 2rem;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.2em;
+      color: var(--silver);
+      cursor: none;
+      background: none;
+      border: none;
+    }
+    .lightbox-close:hover { color: var(--gold); }
+
+    /* ── STYLES SECTION ── */
+    #styles {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .styles-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2rem;
+      margin-top: 3rem;
+    }
+
+    .style-card {
+      padding: 2.5rem 2rem;
+      border: 1px solid var(--smoke);
+      position: relative;
+      transition: border-color 0.3s;
+      overflow: hidden;
+    }
+    .style-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 2px;
+      background: var(--gold);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.4s;
+    }
+    .style-card:hover { border-color: var(--gold-dim); }
+    .style-card:hover::before { transform: scaleX(1); }
+
+    .style-icon {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+    }
+    .style-name {
+      font-family: 'Cinzel Decorative', serif;
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 0.8rem;
+      color: var(--white);
+    }
+    .style-desc {
+      font-size: 1rem;
+      line-height: 1.7;
+      color: var(--ash);
+      font-style: italic;
+    }
+
+    /* ── BOOKING ── */
+    #book {
+      background: var(--charcoal);
+      padding: 8rem 4rem;
+    }
+
+    .book-inner {
+      max-width: 700px;
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    .book-inner .section-title { margin-bottom: 0.5rem; }
+
+    .book-subtitle {
+      font-style: italic;
+      color: var(--silver);
+      font-size: 1.15rem;
+      margin-bottom: 3rem;
+    }
+
+    .booking-form {
+      display: flex;
+      flex-direction: column;
+      gap: 1.2rem;
+      text-align: left;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.2rem;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    .form-group label {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.58rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--ash);
+    }
+
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--smoke);
+      color: var(--white);
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.1rem;
+      padding: 0.9rem 1.2rem;
+      outline: none;
+      transition: border-color 0.3s;
+      cursor: none;
+      -webkit-appearance: none;
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus,
+    .form-group select:focus {
+      border-color: var(--gold);
+    }
+
+    .form-group select option { background: var(--charcoal); }
+
+    .form-group textarea { resize: vertical; min-height: 120px; }
+
+    .form-submit {
+      margin-top: 0.8rem;
+      text-align: center;
+    }
+
+    .btn-submit {
+      padding: 1.1rem 4rem;
+      background: var(--gold);
+      color: var(--black);
+      font-family: 'Space Mono', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      border: none;
+      cursor: none;
+      transition: background 0.3s, transform 0.2s;
+    }
+    .btn-submit:hover {
+      background: #e0bb5a;
+      transform: translateY(-2px);
+    }
+
+    /* ── CONTACT ── */
+    #contact {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6rem;
+      align-items: center;
+    }
+
+    .contact-info p {
+      font-size: 1.15rem;
+      font-style: italic;
+      color: var(--silver);
+      line-height: 1.8;
+      margin-bottom: 2.5rem;
+    }
+
+    .contact-links {
+      display: flex;
+      flex-direction: column;
+      gap: 1.2rem;
+    }
+
+    .contact-link {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      text-decoration: none;
+      padding: 1rem 1.5rem;
+      border: 1px solid var(--smoke);
+      transition: border-color 0.3s, background 0.3s;
+    }
+    .contact-link:hover {
+      border-color: var(--gold);
+      background: rgba(201,168,76,0.04);
+    }
+    .contact-link-icon {
+      font-size: 1.3rem;
+    }
+    .contact-link-text {
+      display: flex;
+      flex-direction: column;
+    }
+    .contact-link-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.55rem;
+      letter-spacing: 0.2em;
+      color: var(--ash);
+      text-transform: uppercase;
+    }
+    .contact-link-value {
+      font-size: 1.1rem;
+      color: var(--white);
+      margin-top: 0.1rem;
+    }
+
+    .contact-quote {
+      font-family: 'Cinzel Decorative', serif;
+      font-size: clamp(1.5rem, 3vw, 2.5rem);
+      line-height: 1.3;
+      color: var(--white);
+    }
+    .contact-quote em {
+      color: var(--gold);
+      font-style: normal;
+      display: block;
+      font-size: 0.6em;
+      letter-spacing: 0.15em;
+      margin-top: 1rem;
+      font-family: 'Space Mono', monospace;
+      font-weight: 400;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      position: relative;
+      z-index: 1;
+      background: var(--black);
+      border-top: 1px solid var(--smoke);
+      padding: 2rem 4rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    footer p {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.58rem;
+      letter-spacing: 0.15em;
+      color: var(--ash);
+    }
+
+    footer .footer-brand {
+      font-family: 'Cinzel Decorative', serif;
+      font-size: 0.8rem;
+      color: var(--gold);
+    }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes scrollPulse {
+      0%, 100% { opacity: 0.4; transform: scaleY(1); }
+      50%       { opacity: 1;   transform: scaleY(1.2); }
+    }
+
+    /* Scroll reveal */
+    .reveal {
+      opacity: 0;
+      transform: translateY(40px);
+      transition: opacity 0.8s ease, transform 0.8s ease;
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ── DIVIDER ── */
+    .divider {
+      width: 100%;
+      height: 1px;
+      background: linear-gradient(to right, transparent, var(--smoke), transparent);
+      margin: 0 auto;
+    }
+
+    /* ── MOBILE ── */
+    @media (max-width: 768px) {
+      nav { padding: 1.2rem 1.5rem; }
+      .nav-links { gap: 1.2rem; }
+      .nav-links a { font-size: 0.55rem; }
+      section { padding: 5rem 1.5rem; }
+      #about { grid-template-columns: 1fr; gap: 3rem; }
+      .styles-grid { grid-template-columns: 1fr; }
+      #contact { grid-template-columns: 1fr; gap: 3rem; }
+      .form-row { grid-template-columns: 1fr; }
+      footer { flex-direction: column; gap: 1rem; text-align: center; }
+      .gallery-grid { grid-template-columns: repeat(2, 1fr); gap: 0.8rem; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation: none !important; transition: none !important; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Custom cursor -->
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<!-- Ink canvas background -->
+<canvas id="inkCanvas"></canvas>
+
+<!-- Lightbox -->
+<div class="lightbox" id="lightbox">
+  <button class="lightbox-close" id="lightboxClose">[ CLOSE ]</button>
+  <img id="lightboxImg" src="" alt="Tattoo" />
+</div>
+
+<!-- NAV -->
+<nav>
+  <a href="#hero" class="nav-logo">IBB</a>
+  <ul class="nav-links">
+    <li><a href="#about">About</a></li>
+    <li><a href="#portfolio">Portfolio</a></li>
+    <li><a href="#styles">Styles</a></li>
+    <li><a href="#book">Book</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <p class="hero-eyebrow">Tattoo Artist · Fine Line &amp; Illustrative</p>
+  <h1 class="hero-title">
+    INKED
+    <span>BY BYRON</span>
+  </h1>
+  <p class="hero-sub">Where every mark tells a story carved in skin.</p>
+  <div class="hero-cta">
+    <a href="#book" class="btn-primary">Book a Session</a>
+  </div>
+  <div class="scroll-hint">
+    <span>Scroll</span>
+    <div class="scroll-line"></div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ABOUT -->
+<section>
+  <div id="about">
+    <div class="about-text reveal">
+      <p class="section-label">The Artist</p>
+      <h2 class="section-title">Turning Vision<br/>Into Skin Art</h2>
+      <p>Byron is a <strong>self-driven tattoo artist</strong> specializing in fine line work, black &amp; grey illustrative, and spiritual custom designs. Every piece is crafted to match your vision — no cookie-cutter flash.</p>
+      <p>From delicate fineline scripts and celestial motifs to bold Japanese-inspired masks and symbolic compositions, Byron's versatile hand adapts to <strong>your story</strong>.</p>
+      <div class="about-stats">
+        <div class="stat">
+          <div class="stat-num">35+</div>
+          <div class="stat-label">Pieces Completed</div>
+        </div>
+        <div class="stat">
+          <div class="stat-num">100%</div>
+          <div class="stat-label">Custom Work</div>
+        </div>
+        <div class="stat">
+          <div class="stat-num">∞</div>
+          <div class="stat-label">Styles Covered</div>
+        </div>
+        <div class="stat">
+          <div class="stat-num">DM</div>
+          <div class="stat-label">For Appointments</div>
+        </div>
+      </div>
+    </div>
+    <div class="about-visual reveal">
+      <div class="about-img-frame">
+        <img src="IMG_9584.jpeg" alt="Byron's tattoo work — dark cherub fine line" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- PORTFOLIO -->
+<section id="portfolio" style="padding: 8rem 4rem;">
+  <div class="portfolio-header reveal">
+    <p class="section-label">Work</p>
+    <h2 class="section-title">Portfolio</h2>
+    <div class="gallery-filter">
+      <button class="filter-btn active" data-filter="all">All</button>
+      <button class="filter-btn" data-filter="fineline">Fine Line</button>
+      <button class="filter-btn" data-filter="illustrative">Illustrative</button>
+      <button class="filter-btn" data-filter="script">Script</button>
+      <button class="filter-btn" data-filter="blackgrey">Black &amp; Grey</button>
+    </div>
+  </div>
+  <div class="gallery-grid">
+    <div class="gallery-item reveal" data-category="blackgrey illustrative">
+      <img src="IMG_9584.jpeg" alt="Dark cherub with devil wings and bow — fine line illustrative" />
+      <div class="gallery-overlay"><span class="gallery-tag">Illustrative · Black &amp; Grey</span></div>
+    </div>
+    <div class="gallery-item reveal" data-category="fineline blackgrey">
+      <img src="IMG_9583.jpeg" alt="Fine line eye with feather details — realism" />
+      <div class="gallery-overlay"><span class="gallery-tag">Fine Line · Realism</span></div>
+    </div>
+    <div class="gallery-item reveal" data-category="blackgrey illustrative">
+      <img src="IMG_9582.jpeg" alt="Lion with all seeing eye and spiritual symbols — illustrative" />
+      <div class="gallery-overlay"><span class="gallery-tag">Illustrative · Spiritual</span></div>
+    </div>
+    <div class="gallery-item reveal" data-category="fineline script">
+      <img src="IMG_9581.jpeg" alt="Todo a su tiempo script with butterfly — fine line script" />
+      <div class="gallery-overlay"><span class="gallery-tag">Script · Fine Line</span></div>
+    </div>
+    <div class="gallery-item reveal" data-category="blackgrey">
+      <img src="IMG_9580.jpeg" alt="Nautical compass rose tattoo — black and grey" />
+      <div class="gallery-overlay"><span class="gallery-tag">Geometric · Black &amp; Grey</span></div>
+    </div>
+    <div class="gallery-item reveal" data-category="script">
+      <img src="IMG_9579.jpeg" alt="Japanese katakana script neck tattoo" />
+      <div class="gallery-overlay"><span class="gallery-tag">Script · Neck</span></div>
+    </div>
+    <div class="gallery-item reveal" data-category="blackgrey illustrative">
+      <img src="IMG_9578.jpeg" alt="Japanese Hannya mask with waves — illustrative" />
+      <div class="gallery-overlay"><span class="gallery-tag">Japanese · Illustrative</span></div>
+    </div>
+    <div class="gallery-item reveal" data-category="fineline">
+      <img src="IMG_9577.jpeg" alt="Fine line star cluster with sparkles" />
+      <div class="gallery-overlay"><span class="gallery-tag">Fine Line · Celestial</span></div>
+    </div>
+    <div class="gallery-item reveal" data-category="fineline illustrative">
+      <img src="IMG_9576.jpeg" alt="Bow and butterfly spine tattoo — fine line feminine" />
+      <div class="gallery-overlay"><span class="gallery-tag">Fine Line · Spine</span></div>
+    </div>
+    <div class="gallery-item reveal" data-category="blackgrey script">
+      <img src="IMG_9575.jpeg" alt="Cross with In Gods Hands Amen script — religious" />
+      <div class="gallery-overlay"><span class="gallery-tag">Religious · Script</span></div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- STYLES -->
+<section>
+  <div id="styles">
+    <div class="reveal">
+      <p class="section-label">Specialties</p>
+      <h2 class="section-title">What Byron Does</h2>
+    </div>
+    <div class="styles-grid">
+      <div class="style-card reveal">
+        <div class="style-icon">✦</div>
+        <div class="style-name">Fine Line</div>
+        <p class="style-desc">Delicate, precise linework — scripts, celestial motifs, florals — built for longevity and elegance.</p>
+      </div>
+      <div class="style-card reveal">
+        <div class="style-icon">⬛</div>
+        <div class="style-name">Black &amp; Grey</div>
+        <p class="style-desc">High-contrast illustrative work with smooth gradients, deep blacks, and cinematic depth.</p>
+      </div>
+      <div class="style-card reveal">
+        <div class="style-icon">龍</div>
+        <div class="style-name">Japanese</div>
+        <p class="style-desc">Hannya masks, waves, clouds — bold compositions rooted in traditional Japanese aesthetic.</p>
+      </div>
+      <div class="style-card reveal">
+        <div class="style-icon">✍</div>
+        <div class="style-name">Script &amp; Lettering</div>
+        <p class="style-desc">Elegant cursive, gothic fonts, and custom lettering in any language — clean and legible.</p>
+      </div>
+      <div class="style-card reveal">
+        <div class="style-icon">🜃</div>
+        <div class="style-name">Spiritual &amp; Symbolic</div>
+        <p class="style-desc">All-seeing eyes, lions, crosses, celestial bodies — meaningful work with spiritual resonance.</p>
+      </div>
+      <div class="style-card reveal">
+        <div class="style-icon">◎</div>
+        <div class="style-name">Custom Concepts</div>
+        <p class="style-desc">Bring your idea, mood board, or just a feeling — Byron will draw it to life from scratch.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- BOOKING -->
+<section id="book">
+  <div class="book-inner">
+    <div class="reveal">
+      <p class="section-label" style="justify-content: center;">Appointments</p>
+      <h2 class="section-title">Book a Session</h2>
+      <p class="book-subtitle">Tell me your vision. I'll bring it to life.</p>
+    </div>
+    <form class="booking-form reveal" id="bookingForm">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Your Name</label>
+          <input type="text" placeholder="First &amp; Last" required />
+        </div>
+        <div class="form-group">
+          <label>Instagram @</label>
+          <input type="text" placeholder="@yourhandle" />
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Phone / WhatsApp</label>
+          <input type="tel" placeholder="(xxx) xxx-xxxx" />
+        </div>
+        <div class="form-group">
+          <label>Style</label>
+          <select>
+            <option value="">Select a style...</option>
+            <option>Fine Line</option>
+            <option>Black &amp; Grey Illustrative</option>
+            <option>Japanese</option>
+            <option>Script / Lettering</option>
+            <option>Spiritual / Symbolic</option>
+            <option>Custom / Not Sure</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Describe Your Tattoo Idea</label>
+        <textarea placeholder="Size, placement, concept, references... the more detail the better."></textarea>
+      </div>
+      <div class="form-submit">
+        <button type="submit" class="btn-submit">Send Request</button>
+      </div>
+    </form>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- CONTACT -->
+<section>
+  <div id="contact">
+    <div class="contact-info reveal">
+      <p class="section-label">Get In Touch</p>
+      <h2 class="section-title">Let's Talk</h2>
+      <p>The fastest way to reach Byron is through Instagram DMs. Drop a message with your idea and he'll get back to you to discuss details, availability, and pricing.</p>
+      <div class="contact-links">
+        <a href="https://instagram.com/ibb.tattoos" target="_blank" class="contact-link">
+          <span class="contact-link-icon">📸</span>
+          <div class="contact-link-text">
+            <span class="contact-link-label">Instagram</span>
+            <span class="contact-link-value">@ibb.tattoos</span>
+          </div>
+        </a>
+        <a href="https://wa.me/1XXXXXXXXXX" class="contact-link">
+          <span class="contact-link-icon">💬</span>
+          <div class="contact-link-text">
+            <span class="contact-link-label">WhatsApp</span>
+            <span class="contact-link-value">DM for number</span>
+          </div>
+        </a>
+      </div>
+    </div>
+    <div class="contact-quote reveal">
+      "Ink doesn't lie. It stays forever — so let's make it worth it."
+      <em>— INKEDBYBYRON</em>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <p class="footer-brand">INKEDBYBYRON</p>
+  <p>© 2025 · @ibb.tattoos · All Rights Reserved</p>
+  <p>Built by <a href="https://www.instagram.com/avwebdesigns" style="color:var(--gold);text-decoration:none;">AV Web Designs</a></p>
+</footer>
+
+<script>
+// ── CURSOR ──
+const cursor = document.getElementById('cursor');
+const ring   = document.getElementById('cursorRing');
+let mx = 0, my = 0, rx = 0, ry = 0;
+
+document.addEventListener('mousemove', e => {
+  mx = e.clientX; my = e.clientY;
+  cursor.style.left = mx + 'px';
+  cursor.style.top  = my + 'px';
+});
+
+function animateRing() {
+  rx += (mx - rx) * 0.12;
+  ry += (my - ry) *.12;
+  ring.style.left = rx + 'px';
+  ring.style.top  = ry + 'px';
+  requestAnimationFrame(animateRing);
+}
+animateRing();
+
+document.querySelectorAll('a, button, .gallery-item, .filter-btn').forEach(el => {
+  el.addEventListener('mouseenter', () => {
+    cursor.style.width = '6px';
+    cursor.style.height = '6px';
+    ring.style.width = '60px';
+    ring.style.height = '60px';
+  });
+  el.addEventListener('mouseleave', () => {
+    cursor.style.width = '12px';
+    cursor.style.height = '12px';
+    ring.style.width = '40px';
+    ring.style.height = '40px';
+  });
+});
+
+// ── INK CANVAS ──
+const canvas = document.getElementById('inkCanvas');
+const ctx    = canvas.getContext('2d');
+let W, H;
+let drops = [];
+let mouse = { x: -999, y: -999 };
+
+function resize() {
+  W = canvas.width  = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener('resize', resize);
+
+document.addEventListener('mousemove', e => {
+  mouse.x = e.clientX;
+  mouse.y = e.clientY;
+  // spawn ink drops on mouse move
+  if (Math.random() < 0.3) spawnDrop(mouse.x, mouse.y, true);
+});
+
+class InkDrop {
+  constructor(x, y, fromMouse = false) {
+    this.x  = x + (Math.random() - 0.5) * (fromMouse ? 30 : W);
+    this.y  = y + (Math.random() - 0.5) * (fromMouse ? 30 : 60);
+    this.r  = Math.random() * (fromMouse ? 8 : 14) + 3;
+    this.vx = (Math.random() - 0.5) * (fromMouse ? 1.2 : 0.4);
+    this.vy = Math.random() * (fromMouse ? -2 : -0.8) - 0.3;
+    this.alpha = fromMouse ? 0.65 : Math.random() * 0.35 + 0.08;
+    this.decay = fromMouse ? 0.006 : 0.0015;
+    this.fromMouse = fromMouse;
+    this.distortion = Math.random() * 0.3 + 0.7;
+    this.wobbleSpeed = Math.random() * 0.05 + 0.02;
+    this.wobbleAmount = 0;
+    this.glossy = Math.random() * 0.6 + 0.4;
+    this.life = 1;
+    this.rotation = Math.random() * Math.PI * 2;
+    this.rotSpeed = (Math.random() - 0.5) * 0.08;
+  }
+  
+  update() {
+    this.x += this.vx;
+    this.y += this.vy;
+    this.vy += 0.012; // gravity
+    this.vx *= 0.985;
+    this.wobbleAmount += this.wobbleSpeed;
+    this.rotation += this.rotSpeed;
+    this.life -= this.decay;
+    this.alpha = Math.max(0, this.alpha * (this.life));
+  }
+  
+  draw(ctx) {
+    if (this.alpha <= 0.005) return;
+    ctx.save();
+    ctx.globalAlpha = this.alpha;
+    ctx.translate(this.x, this.y);
+    ctx.rotate(this.rotation);
+
+    // organic blob shape with noise
+    const pts = 12;
+    const path = new Path2D();
+    path.moveTo(0, -this.r);
+    
+    for (let i = 0; i < pts; i++) {
+      const angle = (i / pts) * Math.PI * 2;
+      const baseR = this.r * (0.7 + Math.sin(this.wobbleAmount + i) * this.distortion * 0.4);
+      const x = Math.cos(angle) * baseR;
+      const y = Math.sin(angle) * baseR;
+      path.lineTo(x, y);
+    }
+    path.closePath();
+
+    // dark blob fill
+    ctx.fillStyle = `rgba(10, 10, 12, ${0.8 * this.alpha})`;
+    ctx.fill(path);
+
+    // glossy highlights (3D effect)
+    const grad = ctx.createRadialGradient(-this.r*0.3, -this.r*0.4, 0, 0, 0, this.r*1.5);
+    grad.addColorStop(0, `rgba(255, 255, 255, ${0.35 * this.glossy * this.alpha})`);
+    grad.addColorStop(0.5, `rgba(255, 255, 255, ${0.1 * this.glossy * this.alpha})`);
+    grad.addColorStop(1, `rgba(255, 255, 255, 0)`);
+    ctx.fillStyle = grad;
+    ctx.fill(path);
+
+    // subtle edge glow
+    ctx.strokeStyle = `rgba(100, 100, 110, ${0.4 * this.alpha})`;
+    ctx.lineWidth = 0.5;
+    ctx.stroke(path);
+
+    ctx.restore();
+  }
+  
+  dead() { return this.life <= 0 || this.alpha <= 0.003; }
+}
+
+function spawnDrop(x, y, fromMouse = false) {
+  drops.push(new InkDrop(x, y, fromMouse));
+}
+
+// ambient drops
+function spawnAmbient() {
+  const x = Math.random() * W;
+  const y = Math.random() * H;
+  spawnDrop(x, y, false);
+}
+
+let frameCount = 0;
+function loop() {
+  ctx.clearRect(0, 0, W, H);
+  frameCount++;
+  if (frameCount % 50 === 0) spawnAmbient();
+  if (drops.length < 80) spawnAmbient();
+
+  drops = drops.filter(d => !d.dead());
+  drops.forEach(d => { d.update(); d.draw(ctx); });
+  requestAnimationFrame(loop);
+}
+loop();
+
+// scroll parallax for ink canvas
+window.addEventListener('scroll', () => {
+  const sy = window.scrollY;
+  canvas.style.transform = `translateY(${sy * 0.15}px)`;
+});
+
+// ── SCROLL REVEAL ──
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) { e.target.classList.add('visible'); }
+  });
+}, { threshold: 0.12 });
+
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+// ── GALLERY FILTER ──
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const filter = btn.dataset.filter;
+    document.querySelectorAll('.gallery-item').forEach(item => {
+      const cats = item.dataset.category || '';
+      if (filter === 'all' || cats.includes(filter)) {
+        item.style.display = '';
+        setTimeout(() => item.style.opacity = '1', 10);
+      } else {
+        item.style.opacity = '0';
+        setTimeout(() => item.style.display = 'none', 300);
+      }
+    });
+  });
+});
+
+// ── LIGHTBOX ──
+const lightbox    = document.getElementById('lightbox');
+const lightboxImg = document.getElementById('lightboxImg');
+const lbClose     = document.getElementById('lightboxClose');
+
+document.querySelectorAll('.gallery-item').forEach(item => {
+  item.addEventListener('click', () => {
+    const img = item.querySelector('img');
+    lightboxImg.src = img.src;
+    lightboxImg.alt = img.alt;
+    lightbox.classList.add('open');
+  });
+});
+
+lbClose.addEventListener('click', () => lightbox.classList.remove('open'));
+lightbox.addEventListener('click', e => {
+  if (e.target === lightbox) lightbox.classList.remove('open');
+});
+
+// ── BOOKING FORM ──
+document.getElementById('bookingForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const btn = e.target.querySelector('.btn-submit');
+  btn.textContent = 'Request Sent ✦';
+  btn.style.background = '#2a5c2a';
+  btn.style.color = '#fff';
+  setTimeout(() => {
+    btn.textContent = 'Send Request';
+    btn.style.background = '';
+    btn.style.color = '';
+  }, 3000);
+});
+
+// ── NAV ACTIVE ──
+window.addEventListener('scroll', () => {
+  const nav = document.querySelector('nav');
+  nav.style.background = window.scrollY > 50
+    ? 'rgba(8,8,8,0.97)'
+    : 'linear-gradient(to bottom, rgba(8,8,8,0.95), transparent)';
+});
+</script>
+</body>
+</html>
